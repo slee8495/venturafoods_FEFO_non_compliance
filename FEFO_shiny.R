@@ -22,8 +22,8 @@ ui <- fluidPage(
                                                       multiple = TRUE),
                                           plotOutput("barplot", height = 600),
                                           h6("Green: < 10% (Meet the target)"),
-                                          h6("Yellow: <= 50% & > 10%"),
-                                          h6("Red: >= 50%")
+                                          h6("Yellow: <= 20% & > 10%"),
+                                          h6("Red: >= 20%")
                                    )
                                  )),
                         tabPanel("Data",
@@ -51,8 +51,8 @@ ui <- fluidPage(
                                            multiple = TRUE),
                                plotOutput("monthly_barplot", height = 600),
                                h6("Green: < 10% (Meet the target)"),
-                               h6("Yellow: <= 50% & > 10%"),
-                               h6("Red: >= 50%")
+                               h6("Yellow: <= 20% & > 10%"),
+                               h6("Red: >= 20%")
                         )
                       )
              )
@@ -77,7 +77,7 @@ server <- function(input, output, session) {
     
     avg_data$branch <- factor(avg_data$branch, levels = avg_data$branch)
     
-    gg <- ggplot(avg_data, aes(x=branch, y=avg_RF_Trx, fill = ifelse(avg_RF_Trx < 0.1, "green", ifelse(avg_RF_Trx < 0.5, "yellow", "red")))) +
+    gg <- ggplot(avg_data, aes(x=branch, y=avg_RF_Trx, fill = ifelse(avg_RF_Trx < 0.1, "green", ifelse(avg_RF_Trx < 0.2, "yellow", "red")))) +
       geom_bar(stat="identity") +
       geom_hline(yintercept = 0.1, linetype="dotted", color = "black", size = 1) +
       geom_text(aes(label=sprintf("%.0f%%", 100*avg_RF_Trx)), vjust=-0.3) +
@@ -152,7 +152,7 @@ server <- function(input, output, session) {
       summarise(avg_RF_Trx = mean(`RF_Trx_Cnt_ByBranch%`, na.rm = TRUE))
     
     gg <- ggplot(avg_data_monthly, aes(x=Month, y=avg_RF_Trx)) +
-      geom_bar(aes(fill = ifelse(avg_RF_Trx >= 0.5, "red", ifelse(avg_RF_Trx >= 0.1, "yellow", "green"))), 
+      geom_bar(aes(fill = ifelse(avg_RF_Trx >= 0.2, "red", ifelse(avg_RF_Trx >= 0.1, "yellow", "green"))), 
                stat="identity", alpha=0.7, width=0.1) +
       scale_fill_manual(values = c("red" = "red", "yellow" = "yellow", "green" = "green")) +
       geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Adding trend line here
