@@ -83,7 +83,7 @@ server <- function(input, output, session) {
       geom_text(aes(label=sprintf("%.0f%%", 100*avg_RF_Trx)), vjust=-0.3) +
       annotate("text", x=Inf, y=0.1, label="Target 10%", hjust=31, vjust=-1.1, color="blue", size=4) +
       scale_fill_manual(values=c("green"="#91cf60", "yellow"="#ffffbf", "red"="firebrick")) +
-      labs(title="RF Pick Trx: FEFO % of Total By Branch",
+      labs(title="FEFO Non Compliance % of Total By Branch",
            x="Branch",
            y="FEFO % OF TOTAL") +
       theme_classic() +
@@ -159,7 +159,7 @@ server <- function(input, output, session) {
       geom_text(aes(label=sprintf("%.2f%%", 100*avg_RF_Trx)), vjust=-0.3) +
       geom_hline(yintercept = 0.1, linetype="dotted", color = "black", size = 1) +
       annotate("text", x=Inf, y=0.1, label="Target 10%", hjust=31, vjust=-1.1, color="blue", size=4) +
-      labs(title="RF Pick Trx: FEFO % of Total By Month",
+      labs(title="FEFO Non Compliance % of Total By Month",
            x="Month",
            y="FEFO % OF TOTAL") +
       theme_classic() +
