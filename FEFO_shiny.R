@@ -46,7 +46,7 @@ ui <- fluidPage(
                         column(12,
                                h2("Monthly Update"),
                                selectInput("selected_monthly_branch", "Select Branch:", 
-                                           choices = c("All", unique(fefo_df$branch)),
+                                           choices = c("All", sort(as.numeric(unique(fefo_df$branch)), na.last = TRUE)),
                                            selected = "All",
                                            multiple = TRUE),
                                plotOutput("monthly_barplot", height = 600),
