@@ -81,7 +81,7 @@ server <- function(input, output, session) {
       geom_bar(stat="identity") +
       geom_hline(yintercept = 0.1, linetype="dotted", color = "black", size = 1) +
       geom_text(aes(label=sprintf("%.0f%%", 100*avg_RF_Trx)), vjust=-0.3) +
-      annotate("text", x=Inf, y=0.1, label="Target 10%", hjust=31, vjust=-1.1, color="blue", size=4) +
+      annotate("text", x=Inf, y=0.1, label="Target 10%", hjust=1, vjust=2.5, color="blue", size=4) +
       scale_fill_manual(values=c("green"="#91cf60", "yellow"="#ffffbf", "red"="firebrick")) +
       labs(title="FEFO Non Compliance % of Total By Branch",
            x="Branch",
@@ -151,14 +151,15 @@ server <- function(input, output, session) {
       group_by(Month) %>% 
       summarise(avg_RF_Trx = mean(`RF_Trx_Cnt_ByBranch%`, na.rm = TRUE))
     
+    
     gg <- ggplot(avg_data_monthly, aes(x=Month, y=avg_RF_Trx)) +
       geom_bar(aes(fill = ifelse(avg_RF_Trx >= 0.2, "red", ifelse(avg_RF_Trx >= 0.1, "yellow", "green"))), 
                stat="identity", alpha=0.7, width=0.1) +
       scale_fill_manual(values = c("red" = "red", "yellow" = "yellow", "green" = "green")) +
-      geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Adding trend line here
+      
       geom_text(aes(label=sprintf("%.2f%%", 100*avg_RF_Trx)), vjust=-0.3) +
       geom_hline(yintercept = 0.1, linetype="dotted", color = "black", size = 1) +
-      annotate("text", x=Inf, y=0.1, label="Target 10%", hjust=31, vjust=-1.1, color="blue", size=4) +
+      annotate("text", x=Inf, y=0.1, label="Target 10%", hjust=1, vjust=2.5, color="blue", size=4) +
       labs(title="FEFO Non Compliance % of Total By Month",
            x="Month",
            y="FEFO % OF TOTAL") +
@@ -169,9 +170,29 @@ server <- function(input, output, session) {
             axis.title.x = element_text(face = "bold", size = 14, color = "blue"),  
             axis.title.y = element_text(face = "bold", size = 14, color = "blue"),  
             axis.text.x = element_text(face = "bold", size = 14),
-            axis.text.y = element_text(face = "bold", size = 14))
+            axis.text.y = element_text(face = "bold", size = 14)) 
+
+      
+    # Insert the new conditional logic here
+    if (nrow(avg_data_monthly) == 1) {
+      gg <- gg + geom_point(color = "tomato", size = 4)
+    } else if (nrow(avg_data_monthly) == 2) {
+      point1 <- avg_data_monthly[1,]
+      point2 <- avg_data_monthly[2,]
+      line_color <- ifelse(point2$avg_RF_Trx > point1$avg_RF_Trx, "tomato", "lightgreen")
+      gg <- gg + geom_segment(aes(x = point1$Month, y = point1$avg_RF_Trx, 
+                                  xend = point2$Month, yend = point2$avg_RF_Trx), 
+                              color = line_color, size = 2, linetype = "dashed")
+    } else if (nrow(avg_data_monthly) > 2) {
+      fit <- lm(avg_RF_Trx ~ Month, data = avg_data_monthly)
+      coef <- coef(fit)
+      line_color <- ifelse(coef[2] > 0, "tomato", "lightgreen")
+      gg <- gg + geom_line(aes(y = coef[1] + coef[2] * as.numeric(Month)), 
+                           color = line_color, size = 2, linetype = "dashed")
+    }
     
     gg
+  
   })
   
 }
