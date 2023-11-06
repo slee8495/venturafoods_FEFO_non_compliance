@@ -152,7 +152,7 @@ server <- function(input, output, session) {
       summarise(avg_RF_Trx = mean(`RF_Trx_Cnt_ByBranch%`, na.rm = TRUE))
     
     
-    gg <- ggplot(avg_data_monthly, aes(x=Month, y=avg_RF_Trx)) +
+    gg <- ggplot(avg_data_monthly, aes(x=Month, y=avg_RF_Trx, group = 1)) +
       geom_bar(aes(fill = ifelse(avg_RF_Trx >= 0.2, "red", ifelse(avg_RF_Trx >= 0.1, "yellow", "green"))), 
                stat="identity", alpha=0.7, width=0.1) +
       scale_fill_manual(values = c("red" = "red", "yellow" = "yellow", "green" = "green")) +
@@ -170,28 +170,12 @@ server <- function(input, output, session) {
             axis.title.x = element_text(face = "bold", size = 14, color = "blue"),  
             axis.title.y = element_text(face = "bold", size = 14, color = "blue"),  
             axis.text.x = element_text(face = "bold", size = 14),
-            axis.text.y = element_text(face = "bold", size = 14)) 
+            axis.text.y = element_text(face = "bold", size = 14)) +
+      ggplot2::geom_smooth(aes(x=Month, y=avg_RF_Trx), method="lm", se=FALSE, color="red", fullrange = TRUE)
 
-      
-    # Insert the new conditional logic here
-    if (nrow(avg_data_monthly) == 1) {
-      gg <- gg + geom_point(color = "tomato", size = 4)
-    } else if (nrow(avg_data_monthly) == 2) {
-      point1 <- avg_data_monthly[1,]
-      point2 <- avg_data_monthly[2,]
-      line_color <- ifelse(point2$avg_RF_Trx > point1$avg_RF_Trx, "tomato", "lightgreen")
-      gg <- gg + geom_segment(aes(x = point1$Month, y = point1$avg_RF_Trx, 
-                                  xend = point2$Month, yend = point2$avg_RF_Trx), 
-                              color = line_color, size = 2, linetype = "dashed")
-    } else if (nrow(avg_data_monthly) > 2) {
-      fit <- lm(avg_RF_Trx ~ Month, data = avg_data_monthly)
-      coef <- coef(fit)
-      line_color <- ifelse(coef[2] > 0, "tomato", "lightgreen")
-      gg <- gg + geom_line(aes(y = coef[1] + coef[2] * as.numeric(Month)), 
-                           color = line_color, size = 2, linetype = "dashed")
-    }
-    
     gg
+    
+    
   
   })
   
