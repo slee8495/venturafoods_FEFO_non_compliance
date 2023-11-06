@@ -52,7 +52,10 @@ ui <- fluidPage(
                                plotOutput("monthly_barplot", height = 600),
                                h6("Green: < 10% (Meet the target)"),
                                h6("Yellow: <= 20% & > 10%"),
-                               h6("Red: >= 20%")
+                               h6("Red: >= 20%"),
+                               tags$br(),
+                               h6("Green: Down Trend Line"),
+                               h6("Red: Up Trend Line")
                         )
                       )
              )
@@ -151,8 +154,14 @@ server <- function(input, output, session) {
       group_by(Month) %>% 
       summarise(avg_RF_Trx = mean(`RF_Trx_Cnt_ByBranch%`, na.rm = TRUE))
     
+    # Compute the slope of the linear regression
+    fit <- lm(avg_RF_Trx ~ Month, data = avg_data_monthly)
+    slope <- coef(fit)[2]
     
-    gg <- ggplot(avg_data_monthly, aes(x=Month, y=avg_RF_Trx, group = 1)) +
+    # Determine the color based on the slope
+    trend_color <- ifelse(slope > 0, "lightcoral", "lightgreen")
+    
+    gg <- ggplot(avg_data_monthly, aes(x=Month, y=avg_RF_Trx)) +
       geom_bar(aes(fill = ifelse(avg_RF_Trx >= 0.2, "red", ifelse(avg_RF_Trx >= 0.1, "yellow", "green"))), 
                stat="identity", alpha=0.7, width=0.1) +
       scale_fill_manual(values = c("red" = "red", "yellow" = "yellow", "green" = "green")) +
@@ -171,7 +180,7 @@ server <- function(input, output, session) {
             axis.title.y = element_text(face = "bold", size = 14, color = "blue"),  
             axis.text.x = element_text(face = "bold", size = 14),
             axis.text.y = element_text(face = "bold", size = 14)) +
-      ggplot2::geom_smooth(aes(x=Month, y=avg_RF_Trx), method="lm", se=FALSE, color="red", fullrange = TRUE)
+      ggplot2::geom_smooth(aes(group=1), method="lm", se=FALSE, color=trend_color, linetype="dashed")
 
     gg
     
