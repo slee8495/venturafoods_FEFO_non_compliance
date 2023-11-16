@@ -37,7 +37,8 @@ ui <- fluidPage(
                                           selectInput("selected_date", "Report Date:", choices = c("All", unique(eod_fefo_report$"Report Date")), selected = "All", multiple = TRUE),
                                           selectInput("selected_branch", "Branch:", choices = c("All", unique(eod_fefo_report$Branch)), selected = "All", multiple = TRUE),
                                           selectInput("selected_sku", "SKU:", choices = c("All", unique(eod_fefo_report$SKU)), selected = "All", multiple = TRUE),
-                                          DTOutput("summary_table"))
+                                          DTOutput("summary_table"),
+                                          downloadButton("downloadData", "Download Filtered Data") )
                                  ))
                       )
              ),
@@ -184,9 +185,19 @@ server <- function(input, output, session) {
 
     gg
     
+  })
+    
+    # Download handler for filtered data
+    output$downloadData <- downloadHandler(
+      filename = function() {
+        paste("filtered_data-", Sys.Date(), ".csv", sep = "")
+      },
+      content = function(file) {
+        write.csv(filtered_data(), file, row.names = FALSE)
+  })
     
   
-  })
+  
   
 }
 # Run the Shiny app
