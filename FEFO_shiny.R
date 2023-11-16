@@ -9,7 +9,7 @@ library(lubridate)
 # Define the UI
 ui <- fluidPage(
   navbarPage("FEFO Non Compliance Report",
-             column(12, tags$img(src = "VenturaFoodsLogo.png", height = 72, width = 500, align = "right")),  # Logo
+             column(12, tags$img(src = "VenturaFoodsLogo.png", height = 72, width = 500, align = "right")),  
              tabPanel("Weekly Update",
                       tabsetPanel(
                         tabPanel("Graph",
