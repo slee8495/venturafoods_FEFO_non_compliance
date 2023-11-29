@@ -1,11 +1,28 @@
 # Load required libraries
-source("FEFO_data.R")
 library(shiny)
 library(tidyverse)
 library(scales)
 library(DT)
 library(lubridate)
 library(shinyWidgets)
+
+source("FEFO_data.R")
+fefo_df <- readRDS("fefo_df.rds")
+
+# Define a function to sort choices alphabetically or numerically
+sort_choices <- function(choices) {
+  if (all(is.numeric(choices))) {
+    return(sort(choices))
+  } else {
+    return(sort(choices, na.last = TRUE))
+  }
+}
+
+# Sort choices for pickerInput filters
+sorted_month_choices <- sort_choices(unique(fefo_df$Month))
+sorted_date_choices <- sort_choices(unique(eod_fefo_report$"Report Date"))
+sorted_branch_choices <- sort_choices(unique(eod_fefo_report$Branch))
+sorted_sku_choices <- sort_choices(unique(eod_fefo_report$SKU))
 
 # Define the UI
 ui <- fluidPage(
@@ -17,8 +34,8 @@ ui <- fluidPage(
                                  fluidRow(
                                    column(12,
                                           h2("Weekly Update"),
-                                          pickerInput("selected_month", "Select Month:",  # Use pickerInput
-                                                      choices = c("All", unique(fefo_df$Month)),
+                                          pickerInput("selected_month", "Select Month:", 
+                                                      choices = sorted_month_choices,
                                                       selected = as.numeric(format(Sys.Date(), "%Y%m")),
                                                       multiple = TRUE,
                                                       options = list(
@@ -38,17 +55,20 @@ ui <- fluidPage(
                                                    " (Monday) - ",
                                                    format(floor_date(Sys.Date(), "week"), "%m/%d/%Y"),
                                                    " (Sunday)")),
-                                          pickerInput("selected_date", "Report Date:", choices = c("All", unique(eod_fefo_report$"Report Date")), selected = "All", multiple = TRUE,
+                                          pickerInput("selected_date", "Report Date:", choices = sorted_date_choices, selected = sorted_date_choices, multiple = TRUE,
                                                       options = list(
-                                                        `actions-box` = TRUE  # Show the "deselect all" option
+                                                        `actions-box` = TRUE 
                                                       )),
-                                          pickerInput("selected_branch", "Branch:", choices = c("All", unique(eod_fefo_report$Branch)), selected = "All", multiple = TRUE,
+                                          pickerInput("selected_branch", "Branch:", choices = sorted_branch_choices, selected = sorted_branch_choices, multiple = TRUE,
                                                       options = list(
-                                                        `actions-box` = TRUE  # Show the "deselect all" option
+                                                        `actions-box` = TRUE  
                                                       )),
-                                          pickerInput("selected_sku", "SKU:", choices = c("All", unique(eod_fefo_report$SKU)), selected = "All", multiple = TRUE,
+                                          pickerInput("selected_sku", "SKU:", choices = sorted_sku_choices, 
+                                                      selected = sorted_sku_choices, multiple = TRUE,
                                                       options = list(
-                                                        `actions-box` = TRUE  # Show the "deselect all" option
+                                                        `actions-box` = TRUE,  
+                                                        `live-search` = TRUE,
+                                                        `size` = 10
                                                       )),
                                           DTOutput("summary_table"),
                                           downloadButton("downloadData", "Download Filtered Data") )
@@ -59,12 +79,12 @@ ui <- fluidPage(
                       fluidRow(
                         column(12,
                                h2("Monthly Update"),
-                               pickerInput("selected_monthly_branch", "Select Branch:",  # Use pickerInput
-                                           choices = c("All", sort(as.numeric(unique(fefo_df$branch)), na.last = TRUE)),
-                                           selected = "All",
+                               pickerInput("selected_monthly_branch", "Select Branch:",  
+                                           choices = sort_choices(unique(fefo_df$branch)),
+                                           selected = sort_choices(unique(fefo_df$branch)), 
                                            multiple = TRUE,
                                            options = list(
-                                             `actions-box` = TRUE  # Show the "deselect all" option
+                                             `actions-box` = TRUE 
                                            )),
                                plotOutput("monthly_barplot", height = 600),
                                h6("Green: < 10% (Meet the target)"),
@@ -148,16 +168,19 @@ server <- function(input, output, session) {
         `Lot To Be Picked Cost Risk` = scales::dollar(`Lot To Be Picked Cost Risk`)
       ),
       rownames = FALSE,
-      extensions = "Buttons",
+      extensions = c("Buttons", "FixedHeader"),
       options = list(
         pageLength = 100,
-        scrollX = TRUE,
         dom = "Blfrtip",
         buttons = c("copy", "csv", "excel"),
-        fixedColumns = list(leftColumns = 2)
+        fixedHeader = TRUE, 
+        fixedColumns = list(leftColumns = 2),
+        scrollX = TRUE,
+        scrollY = "800px"
       )
     )
   })
+  
   
   output$monthly_barplot <- renderPlot({
     selected_branch <- input$selected_monthly_branch
@@ -212,9 +235,7 @@ server <- function(input, output, session) {
       write.csv(filtered_data(), file, row.names = FALSE)
     })
   
-  
-  
-  
 }
+
 # Run the Shiny app
 shinyApp(ui, server)

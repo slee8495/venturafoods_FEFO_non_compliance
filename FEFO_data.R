@@ -7,7 +7,11 @@ library(lubridate)
 library(stringr)
 
 # Main Data (raw)
-fefo_df <- readxl::read_excel("FEFO Report.xlsx")
+
+# fefo_df_xlsx <- readxl::read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 24/FEFO Non Compliance Reporting/Weekly Report/11.27.2023/fefo_report.xlsx")
+# saveRDS(fefo_df_xlsx, "fefo_df.rds")
+fefo_df <- readRDS("fefo_df.rds")
+
 
 fefo_df %>% 
   dplyr::mutate(branch = as.numeric(branch)) -> fefo_df
