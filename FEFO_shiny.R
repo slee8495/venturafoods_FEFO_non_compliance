@@ -5,6 +5,7 @@ library(tidyverse)
 library(scales)
 library(DT)
 library(lubridate)
+library(shinyWidgets)
 
 # Define the UI
 ui <- fluidPage(
@@ -16,10 +17,13 @@ ui <- fluidPage(
                                  fluidRow(
                                    column(12,
                                           h2("Weekly Update"),
-                                          selectInput("selected_month", "Select Month:", 
+                                          pickerInput("selected_month", "Select Month:",  # Use pickerInput
                                                       choices = c("All", unique(fefo_df$Month)),
                                                       selected = as.numeric(format(Sys.Date(), "%Y%m")),
-                                                      multiple = TRUE),
+                                                      multiple = TRUE,
+                                                      options = list(
+                                                        `actions-box` = TRUE  
+                                                      )),
                                           plotOutput("barplot", height = 600),
                                           h6("Green: < 10% (Meet the target)"),
                                           h6("Yellow: <= 20% & > 10%"),
@@ -34,9 +38,18 @@ ui <- fluidPage(
                                                    " (Monday) - ",
                                                    format(floor_date(Sys.Date(), "week"), "%m/%d/%Y"),
                                                    " (Sunday)")),
-                                          selectInput("selected_date", "Report Date:", choices = c("All", unique(eod_fefo_report$"Report Date")), selected = "All", multiple = TRUE),
-                                          selectInput("selected_branch", "Branch:", choices = c("All", unique(eod_fefo_report$Branch)), selected = "All", multiple = TRUE),
-                                          selectInput("selected_sku", "SKU:", choices = c("All", unique(eod_fefo_report$SKU)), selected = "All", multiple = TRUE),
+                                          pickerInput("selected_date", "Report Date:", choices = c("All", unique(eod_fefo_report$"Report Date")), selected = "All", multiple = TRUE,
+                                                      options = list(
+                                                        `actions-box` = TRUE  # Show the "deselect all" option
+                                                      )),
+                                          pickerInput("selected_branch", "Branch:", choices = c("All", unique(eod_fefo_report$Branch)), selected = "All", multiple = TRUE,
+                                                      options = list(
+                                                        `actions-box` = TRUE  # Show the "deselect all" option
+                                                      )),
+                                          pickerInput("selected_sku", "SKU:", choices = c("All", unique(eod_fefo_report$SKU)), selected = "All", multiple = TRUE,
+                                                      options = list(
+                                                        `actions-box` = TRUE  # Show the "deselect all" option
+                                                      )),
                                           DTOutput("summary_table"),
                                           downloadButton("downloadData", "Download Filtered Data") )
                                  ))
@@ -46,10 +59,13 @@ ui <- fluidPage(
                       fluidRow(
                         column(12,
                                h2("Monthly Update"),
-                               selectInput("selected_monthly_branch", "Select Branch:", 
+                               pickerInput("selected_monthly_branch", "Select Branch:",  # Use pickerInput
                                            choices = c("All", sort(as.numeric(unique(fefo_df$branch)), na.last = TRUE)),
                                            selected = "All",
-                                           multiple = TRUE),
+                                           multiple = TRUE,
+                                           options = list(
+                                             `actions-box` = TRUE  # Show the "deselect all" option
+                                           )),
                                plotOutput("monthly_barplot", height = 600),
                                h6("Green: < 10% (Meet the target)"),
                                h6("Yellow: <= 20% & > 10%"),
@@ -182,20 +198,20 @@ server <- function(input, output, session) {
             axis.text.x = element_text(face = "bold", size = 14),
             axis.text.y = element_text(face = "bold", size = 14)) +
       ggplot2::geom_smooth(aes(group=1), method="lm", se=FALSE, color=trend_color, linetype="dashed")
-
+    
     gg
     
   })
-    
-    # Download handler for filtered data
-    output$downloadData <- downloadHandler(
-      filename = function() {
-        paste("filtered_data-", Sys.Date(), ".csv", sep = "")
-      },
-      content = function(file) {
-        write.csv(filtered_data(), file, row.names = FALSE)
-  })
-    
+  
+  # Download handler for filtered data
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("filtered_data-", Sys.Date(), ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(filtered_data(), file, row.names = FALSE)
+    })
+  
   
   
   
