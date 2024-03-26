@@ -5,6 +5,7 @@ library(scales)
 library(DT)
 library(lubridate)
 library(shinyWidgets)
+library(writexl)
 
 source("FEFO_data.R")
 fefo_df <- readRDS("fefo_df.rds")
@@ -71,7 +72,8 @@ ui <- fluidPage(
                                                         `size` = 10
                                                       )),
                                           DTOutput("summary_table"),
-                                          downloadButton("downloadData", "Download Filtered Data") )
+                                          downloadButton("downloadData", "Download Filtered Data"),
+                                          downloadButton("downloadFEFO_xlsx", "Download FEFO Full Data"))
                                  ))
                       )
              ),
@@ -235,7 +237,23 @@ server <- function(input, output, session) {
       write.csv(filtered_data(), file, row.names = FALSE)
     })
   
+
+
+
+
+
+output$downloadFEFO_xlsx <- downloadHandler(
+  filename = function() {
+    paste("FEFO_data-", Sys.Date(), ".xlsx", sep = "")
+  },
+  content = function(file) {
+    writexl::write_xlsx(fefo_df, file)
+})
+
+
+
 }
+
 
 # Run the Shiny app
 shinyApp(ui, server)

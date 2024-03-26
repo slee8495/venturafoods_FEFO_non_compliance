@@ -8,6 +8,8 @@ library(stringr)
 
 # Main Data (raw)
 
+specific_date <- as.Date("2024-03-18")
+
 ######################## make sure to text this in & out back and fourth #################################
 # fefo_df_xlsx <- readxl::read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 24/FEFO Non Compliance Reporting/Weekly Report/2024/03.18.2024/fefo_report.xlsx")
 # saveRDS(fefo_df_xlsx, "fefo_df.rds")
@@ -22,8 +24,8 @@ fefo_df %>%
 
                   
 # Calculate last Monday and last Sunday dates
-last_monday <- format(Sys.Date() - as.numeric(format(Sys.Date(), "%u")) - 6, "%Y%m%d")
-last_sunday <- format(Sys.Date() - as.numeric(format(Sys.Date(), "%u")), "%Y%m%d")
+last_monday <- format(specific_date - as.numeric(format(specific_date, "%u")) - 6, "%Y%m%d")
+last_sunday <- format(specific_date - as.numeric(format(specific_date, "%u")), "%Y%m%d")
 
 # Convert report_dt to character format to ensure correct comparison
 fefo_df %>% 
